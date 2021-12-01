@@ -1,3 +1,6 @@
+import time
+
+
 # Prints the board
 def print_board(board):
     print("Printing board...")
@@ -70,7 +73,32 @@ def place_mark(row_input, col_input, board, player_id):
     return board
 
 
+# Checks if the game has been won
+def check_win(board, player_id):
+    board_top = board[0]
+    board_mid = board[1]
+    board_bot = board[2]
+
+    # Picks which mark to use
+    if player_id == 1:
+        mark = "X"
+
+    else:
+        mark = "O"
+
+    # Checks all win scenarios
+    return ((board_top[0] == mark and board_top[1] == mark and board_top[2] == mark) or  # across the top
+            (board_mid[0] == mark and board_mid[1] == mark and board_mid[2] == mark) or  # across the middle
+            (board_bot[0] == mark and board_bot[1] == mark and board_bot[2] == mark) or  # across the bottom
+            (board_top[0] == mark and board_mid[0] == mark and board_bot[0] == mark) or  # down the left side
+            (board_top[1] == mark and board_mid[1] == mark and board_bot[1] == mark) or  # down the middle
+            (board_top[2] == mark and board_mid[2] == mark and board_bot[2] == mark) or  # down the right side
+            (board_top[0] == mark and board_mid[1] == mark and board_bot[2] == mark) or  # diagonal
+            (board_bot[0] == mark and board_mid[1] == mark and board_top[2] == mark))  # diagonal
+
+
 def player_turn(board, player_id):
+    # Asks for input
     print("\nPlayer %d's turn!" % player_id)
     row_input = input("Enter a row (0 - 2): ")
     col_input = input("Enter a column (0 - 2): ")
@@ -87,18 +115,18 @@ def player_turn(board, player_id):
 
     row_input = int(row_input)
     col_input = int(col_input)
+
+    # Checks if the mark can be placed
     mark_check = check_mark(row_input, col_input, board)
 
-    # Checks if mark can be placed and switches player turn
+    # Places the mark if possible
     if mark_check is True and player_id == 1:
         place_mark(row_input, col_input, board, player_id)
-        player_id = 2
 
     elif mark_check is True and player_id == 2:
         place_mark(row_input, col_input, board, player_id)
-        player_id = 1
 
-    return player_id
+    return mark_check
 
 
 def main():
@@ -107,6 +135,7 @@ def main():
     board_mid = ['-', '-', '-']
     board_bot = ['-', '-', '-']
     board = [board_top, board_mid, board_bot]
+    elapsed_turns = 0
 
     print("Printing board...")
     for i in board:
@@ -117,13 +146,46 @@ def main():
         # Player 1's turn
         player_id = 1
         while player_id == 1:
-            player_id = player_turn(board, player_id)
+            mark_check = player_turn(board, player_id)
+            win = check_win(board, player_id)
             print_board(board)
+
+            # Ends game if won or a draw, otherwise makes sure player 1 has completed turn before switching turns
+            if win is True:
+                print("\nPlayer 1 wins!")
+                time.sleep(5)
+                exit(0)
+
+            elif mark_check is False:
+                player_id = 1
+
+            elif elapsed_turns == 8:
+                print("\nDraw game.")
+                time.sleep(5)
+                exit(0)
+
+            elif mark_check is True:
+                player_id = 2
+                elapsed_turns += 1
 
         # Player 2's Turn
         while player_id == 2:
-            player_id = player_turn(board, player_id,)
+            mark_check = player_turn(board, player_id,)
+            win = check_win(board, player_id)
             print_board(board)
+
+            # Ends game if won, otherwise makes sure player 2 has completed turn before switching turns
+            if win is True:
+                print("\nPlayer 2 wins!")
+                time.sleep(5)
+                exit(0)
+
+            elif mark_check is False:
+                player_id = 2
+
+            elif mark_check is True:
+                player_id = 1
+                elapsed_turns += 1
 
 
 main()
